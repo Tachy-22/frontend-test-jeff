@@ -15,7 +15,6 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 import { convertColorToRgb } from "@/lib/utils";
 
-
 // We need to specify the worker source, but we're using legacy build to avoid Node.js dependencies
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -32,7 +31,7 @@ const DocumentViewer: React.FC = () => {
     setFile, // We'll use this to reset the file,,
     setAnnotations,
     setActiveAnnotation,
-  ///  annotationColor,
+    ///  annotationColor,
     highlightColor,
     underlineColor,
   } = useDocument();
@@ -151,8 +150,6 @@ const DocumentViewer: React.FC = () => {
     setScale((prevScale) => Math.max(prevScale - 0.2, 0.5));
   };
 
-
-
   const exportDocument = async () => {
     if (!file) return;
 
@@ -191,7 +188,7 @@ const DocumentViewer: React.FC = () => {
         for (const annotation of pageAnnotations) {
           const scaleFactor = 1.0;
           // Determine which color to use based on the annotation type
-         // let colorToUse = annotationColor;
+          // let colorToUse = annotationColor;
 
           // Convert the annotation color to rgb format for pdf-lib
           const pdfColor =
@@ -208,7 +205,7 @@ const DocumentViewer: React.FC = () => {
                   scaleFactor,
               width: (annotation.position.width || 0) * scaleFactor,
               height: (annotation.position.height || 0) * scaleFactor,
-              color: pdfColor,
+              color: convertColorToRgb(highlightColor),
               opacity: 0.3,
             });
           } else if (annotation.type === "underline") {

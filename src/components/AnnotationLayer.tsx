@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDocument } from "@/contexts/DocumentContext";
 import CommentDialog from "./CommentDialog";
-import { convertColorToRgb } from "@/lib/utils";
 
 interface AnnotationLayerProps {
   pageNumber: number;
@@ -26,7 +25,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     currentTool,
     activeAnnotation,
     setActiveAnnotation,
-    annotationColor,
+   // annotationColor,
     highlightColor,
     underlineColor,
   } = useDocument();
