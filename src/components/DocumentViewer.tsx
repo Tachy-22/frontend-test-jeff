@@ -632,7 +632,7 @@ const DocumentViewer: React.FC = () => {
                 scale={scale}
                 width={pageWidth}
                 height={pageHeight}
-                isMobile={isMobile}
+                //isMobile={isMobile}
               />
             </div>
           </div>
