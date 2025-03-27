@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDocument } from "@/contexts/DocumentContext";
 import CommentDialog from "./CommentDialog";
-// import { touchToMousePosition, getTouchPosition } from "@/lib/touch-utils";
 
 interface AnnotationLayerProps {
   pageNumber: number;
@@ -277,6 +276,237 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     setIsCommentDialogOpen(false);
   };
 
+  // Touch event handling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || !e.touches[0]) return;
+
+    // Prevent default to avoid scrolling while annotating
+    if (currentTool && currentTool !== 'select') {
+      e.preventDefault();
+    }
+
+    const touch = e.touches[0];
+    const x = (touch.clientX - rect.left) / scale;
+    const y = (touch.clientY - rect.top) / scale;
+
+    if (currentTool && currentTool !== 'select') {
+      setIsDrawing(true);
+      setStartPosition({ x, y });
+      setCurrentPosition({ x, y });
+    } else if (currentTool === 'select') {
+      // Check if we're touching an existing annotation for dragging
+      const annotationUnderTouch = findAnnotationAtPosition(x, y);
+      if (annotationUnderTouch) {
+        setActiveAnnotation(annotationUnderTouch);
+        setDraggedAnnotation(annotationUnderTouch.id);
+        setInitialDragPos({ x, y });
+        e.preventDefault(); // Prevent scrolling while dragging
+      } else if (activeAnnotation) {
+        // Check if we're touching a resize handle
+        const handleTouched = findResizeHandleAtPosition(x, y, activeAnnotation);
+        if (handleTouched) {
+          setResizingAnnotation(activeAnnotation.id);
+          setResizeHandle(handleTouched);
+          e.preventDefault(); // Prevent scrolling while resizing
+        } else {
+          setActiveAnnotation(null);
+        }
+      }
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || !e.touches[0]) return;
+
+    // Always prevent default during annotation actions to avoid page scrolling
+    if (isDrawing || draggedAnnotation || resizingAnnotation) {
+      e.preventDefault();
+    }
+
+    const touch = e.touches[0];
+    const x = (touch.clientX - rect.left) / scale;
+    const y = (touch.clientY - rect.top) / scale;
+
+    if (isDrawing) {
+      setCurrentPosition({ x, y });
+    } else if (draggedAnnotation) {
+      const deltaX = x - initialDragPos.x;
+      const deltaY = y - initialDragPos.y;
+      
+      const annotation = annotations.find(a => a.id === draggedAnnotation);
+      if (annotation) {
+        updateAnnotation(draggedAnnotation, {
+          ...annotation,
+          position: {
+            ...annotation.position,
+            x: annotation.position.x + deltaX,
+            y: annotation.position.y + deltaY,
+          },
+        });
+        setInitialDragPos({ x, y });
+      }
+    } else if (resizingAnnotation && resizeHandle) {
+      // Handle resize - similar to mouse resize logic
+      const annotation = annotations.find(a => a.id === resizingAnnotation);
+      if (annotation) {
+        let newX = annotation.position.x;
+        let newY = annotation.position.y;
+        let newWidth = annotation.position.width || 0;
+        let newHeight = annotation.position.height || 0;
+
+        // Use the same resize logic as for mouse
+        switch (resizeHandle) {
+          case "nw": // Top-left
+            newX = x;
+            newY = y;
+            newWidth = annotation.position.x + (annotation.position.width || 0) - x;
+            newHeight = annotation.position.y + (annotation.position.height || 0) - y;
+            break;
+          case "ne": // Top-right
+            newY = y;
+            newWidth = x - annotation.position.x;
+            newHeight = annotation.position.y + (annotation.position.height || 0) - y;
+            break;
+          case "sw": // Bottom-left
+            newX = x;
+            newWidth = annotation.position.x + (annotation.position.width || 0) - x;
+            newHeight = y - annotation.position.y;
+            break;
+          case "se": // Bottom-right
+            newWidth = x - annotation.position.x;
+            newHeight = y - annotation.position.y;
+            break;
+        }
+
+        // Ensure minimum size
+        if (newWidth < 20) newWidth = 20;
+        if (newHeight < 20) newHeight = 20;
+
+        updateAnnotation(resizingAnnotation, {
+          ...annotation,
+          position: {
+            x: newX,
+            y: newY,
+            width: newWidth,
+            height: newHeight,
+          },
+        });
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (isDrawing) {
+      // Similar to mouse up, create annotation if we were drawing
+      if (!currentTool || currentTool === "select") {
+        setIsDrawing(false);
+        return;
+      }
+
+      // Minimum size check to avoid accidental taps
+      const width = Math.abs(currentPosition.x - startPosition.x);
+      const height = Math.abs(currentPosition.y - startPosition.y);
+
+      if (width < 5 && height < 5) {
+        // For tiny movements, treat as tap
+        if (currentTool === "comment") {
+          // Handle comment creation on tap
+          setCommentPosition({
+            x: startPosition.x,
+            y: startPosition.y,
+          });
+          setIsCommentDialogOpen(true);
+        }
+        setIsDrawing(false);
+        return;
+      }
+
+      // Create annotation based on current tool
+      if (currentTool === "highlight" || currentTool === "underline") {
+        addAnnotation({
+          type: currentTool,
+          pageNumber,
+          position: {
+            x: Math.min(startPosition.x, currentPosition.x),
+            y: Math.min(startPosition.y, currentPosition.y),
+            width,
+            height,
+          },
+          color: currentTool === "highlight" ? highlightColor : underlineColor,
+        });
+      } else if (currentTool === "comment") {
+        setCommentPosition({
+          x: Math.min(startPosition.x, currentPosition.x),
+          y: Math.min(startPosition.y, currentPosition.y),
+        });
+        setIsCommentDialogOpen(true);
+      }
+    }
+
+    setIsDrawing(false);
+    setDraggedAnnotation(null);
+    setResizingAnnotation(null);
+    setResizeHandle(null);
+  };
+
+  // Helper to find if a touch is on an annotation
+  const findAnnotationAtPosition = (x: number, y: number) => {
+    // Scan annotations in reverse order to get the top-most one first
+    for (let i = currentPageAnnotations.length - 1; i >= 0; i--) {
+      const annotation = currentPageAnnotations[i];
+      
+      // Check if point is inside annotation bounds
+      if (
+        x >= annotation.position.x &&
+        x <= annotation.position.x + (annotation.position.width || 0) &&
+        y >= annotation.position.y &&
+        y <= annotation.position.y + (annotation.position.height || 0)
+      ) {
+        return annotation;
+      }
+    }
+    return null;
+  };
+
+  // Helper to find if a touch is on a resize handle
+  const findResizeHandleAtPosition = (x: number, y: number, annotation: any) => {
+    if (!annotation) return null;
+
+    // Check each handle position
+    const handleSize = 15 / scale; // Make the touch target bigger than visual size
+    const positions = {
+      "nw": { 
+        x: annotation.position.x, 
+        y: annotation.position.y 
+      },
+      "ne": { 
+        x: annotation.position.x + (annotation.position.width || 0), 
+        y: annotation.position.y 
+      },
+      "sw": { 
+        x: annotation.position.x, 
+        y: annotation.position.y + (annotation.position.height || 0) 
+      },
+      "se": { 
+        x: annotation.position.x + (annotation.position.width || 0), 
+        y: annotation.position.y + (annotation.position.height || 0) 
+      }
+    };
+
+    for (const handle of RESIZE_HANDLES) {
+      const pos = positions[handle as keyof typeof positions];
+      if (
+        Math.abs(x - pos.x) < handleSize / 2 &&
+        Math.abs(y - pos.y) < handleSize / 2
+      ) {
+        return handle;
+      }
+    }
+    return null;
+  };
+
   return (
     <>
       <div
@@ -287,6 +517,9 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Render existing annotations */}
         {currentPageAnnotations.map((annotation) => {

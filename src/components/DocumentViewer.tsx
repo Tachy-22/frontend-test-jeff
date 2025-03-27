@@ -14,7 +14,6 @@ import { PDFDocument, rgb } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 import { convertColorToRgb } from "@/lib/utils";
-import { getTouchPosition, getTouchDistance } from "@/lib/touch-utils";
 
 // We need to specify the worker source, but we're using legacy build to avoid Node.js dependencies
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -40,6 +39,29 @@ const DEFAULT_TOUCH_STATE: TouchState = {
   isMultiTouch: false,
   initialDistance: 0,
   initialScale: 1,
+};
+
+// Define touch utility functions directly in the component
+// Get touch coordinates relative to an element
+const getTouchPosition = (
+  event: React.TouchEvent | TouchEvent,
+  element: HTMLElement
+): { x: number; y: number } => {
+  const touch = event.touches[0];
+  const rect = element.getBoundingClientRect();
+  return {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top,
+  };
+};
+
+// Calculate distance between two touch points for pinch-zoom
+const getTouchDistance = (event: React.TouchEvent | TouchEvent): number => {
+  if (event.touches.length < 2) return 0;
+
+  const dx = event.touches[0].clientX - event.touches[1].clientX;
+  const dy = event.touches[0].clientY - event.touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
 };
 
 const DocumentViewer: React.FC = () => {
@@ -76,11 +98,11 @@ const DocumentViewer: React.FC = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Load the PDF document using PDF.js
@@ -176,7 +198,7 @@ const DocumentViewer: React.FC = () => {
         await page.render({
           canvasContext: context,
           viewport: scaledViewport,
-        //  renderInteractiveForms: true,
+          //  renderInteractiveForms: true,
           enableWebGL: true,
           // Use high quality rendering
           canvasFactoryFactory: {
@@ -261,7 +283,7 @@ const DocumentViewer: React.FC = () => {
         for (const annotation of pageAnnotations) {
           const scaleFactor = 1.0;
 
-          if (currentTool === "highlight") {
+          if (annotation.type === "highlight") {
             pdfPage.drawRectangle({
               x: annotation.position.x * scaleFactor,
               y:
@@ -273,7 +295,7 @@ const DocumentViewer: React.FC = () => {
               color: convertColorToRgb(highlightColor),
               opacity: 0.3,
             });
-          } else if (currentTool === "underline") {
+          } else if (annotation.type === "underline") {
             // Fix underline rendering
             pdfPage.drawLine({
               start: {
@@ -410,27 +432,27 @@ const DocumentViewer: React.FC = () => {
   // Add touch event handlers for mobile navigation
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!containerRef.current) return;
-    
+
     if (e.touches.length === 1) {
       // Single touch - prepare for drag
       const { x, y } = getTouchPosition(e, containerRef.current);
-      setTouchState(prev => ({
+      setTouchState((prev) => ({
         ...prev,
         isDragging: true,
         lastX: x,
         lastY: y,
         startX: x,
         startY: y,
-        isMultiTouch: false
+        isMultiTouch: false,
       }));
     } else if (e.touches.length === 2) {
       // Pinch zoom
       const initialDistance = getTouchDistance(e);
-      setTouchState(prev => ({
+      setTouchState((prev) => ({
         ...prev,
         isMultiTouch: true,
         initialDistance,
-        initialScale: scale
+        initialScale: scale,
       }));
     }
   };
@@ -444,24 +466,27 @@ const DocumentViewer: React.FC = () => {
       const currentDistance = getTouchDistance(e);
       if (touchState.initialDistance > 0) {
         const delta = currentDistance / touchState.initialDistance;
-        const newScale = Math.min(Math.max(touchState.initialScale * delta, 0.5), 3);
+        const newScale = Math.min(
+          Math.max(touchState.initialScale * delta, 0.5),
+          3
+        );
         setScale(newScale);
       }
     } else if (touchState.isDragging && e.touches.length === 1) {
       // Handle single-touch drag (for annotations or panning)
       const { x, y } = getTouchPosition(e, containerRef.current);
-      
+
       // Calculate drag distance
       const deltaX = x - touchState.lastX;
       const deltaY = y - touchState.lastY;
-      
+
       // Update last position
-      setTouchState(prev => ({
+      setTouchState((prev) => ({
         ...prev,
         lastX: x,
-        lastY: y
+        lastY: y,
       }));
-      
+
       // If currentTool is active, we'll use this for annotation creation
       if (currentTool) {
         // Touch drag logic for creating annotations will be handled by
@@ -475,14 +500,14 @@ const DocumentViewer: React.FC = () => {
     if (touchState.isDragging) {
       const tapDistance = Math.sqrt(
         Math.pow(touchState.lastX - touchState.startX, 2) +
-        Math.pow(touchState.lastY - touchState.startY, 2)
+          Math.pow(touchState.lastY - touchState.startY, 2)
       );
-      
+
       // If it's a tap (small movement) rather than a drag
       if (tapDistance < 10) {
         const tapX = touchState.lastX;
         const containerWidth = containerRef.current?.clientWidth || 0;
-        
+
         // Left side tap = previous page, right side tap = next page
         if (tapX < containerWidth * 0.3) {
           goToPreviousPage();
@@ -491,7 +516,7 @@ const DocumentViewer: React.FC = () => {
         }
       }
     }
-    
+
     // Reset touch state
     setTouchState(DEFAULT_TOUCH_STATE);
   };
@@ -617,14 +642,14 @@ const DocumentViewer: React.FC = () => {
       {/* Add mobile-specific controls when on mobile */}
       {isMobile && (
         <div className="fixed bottom-5 left-0 right-0 flex justify-center gap-4 z-50">
-          <Button 
-            className="rounded-full h-14 w-14 shadow-lg" 
+          <Button
+            className="rounded-full h-14 w-14 shadow-lg"
             onClick={zoomOut}
             disabled={scale <= 0.5}
           >
             -
           </Button>
-          <Button 
+          <Button
             className="rounded-full h-14 w-14 shadow-lg"
             onClick={zoomIn}
             disabled={scale >= 3}
