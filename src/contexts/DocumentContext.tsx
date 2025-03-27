@@ -48,6 +48,10 @@ interface DocumentContextType {
   setHighlightColor: (color: string) => void;
   underlineColor: string;
   setUnderlineColor: (color: string) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 const DocumentContext = createContext<DocumentContextType | undefined>(
@@ -72,6 +76,17 @@ export const DocumentProvider: React.FC<{ children: ReactNode }> = ({
   const [highlightColor, setHighlightColor] = useState<string>('#FFEB3B'); // Default yellow for highlights
   const [underlineColor, setUnderlineColor] = useState<string>('#4285F4'); // Default blue for underlines
 
+  // History states for undo/redo functionality
+  const [past, setPast] = useState<Annotation[][]>([]);
+  const [future, setFuture] = useState<Annotation[][]>([]);
+
+  // Helper function to update annotations while tracking history
+  const updateAnnotationsWithHistory = (newAnnotations: Annotation[]) => {
+    setPast([...past, annotations]);
+    setAnnotations(newAnnotations);
+    setFuture([]);
+  };
+
   const addAnnotation = (annotation: Omit<Annotation, "id">) => {
     // Determine which color to use based on annotation type
     let colorToUse = annotationColor;
@@ -86,18 +101,55 @@ export const DocumentProvider: React.FC<{ children: ReactNode }> = ({
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       color: annotation.color || colorToUse, // Use the type-appropriate color
     };
-    setAnnotations([...annotations, newAnnotation]);
+    
+    // Add to history and update annotations
+    updateAnnotationsWithHistory([...annotations, newAnnotation]);
   };
 
   const updateAnnotation = (id: string, updatedAnnotation: Annotation) => {
-    setAnnotations(
+    updateAnnotationsWithHistory(
       annotations.map((a) => (a.id === id ? updatedAnnotation : a))
     );
   };
 
   const removeAnnotation = (id: string) => {
-    setAnnotations(annotations.filter((a) => a.id !== id));
+    updateAnnotationsWithHistory(annotations.filter((a) => a.id !== id));
   };
+
+  // Override setAnnotations to track history
+  const setAnnotationsWithHistory = (newAnnotations: Annotation[]) => {
+    setPast([...past, annotations]);
+    setAnnotations(newAnnotations);
+    setFuture([]);
+  };
+
+  // Undo function
+  const undo = () => {
+    if (past.length === 0) return;
+    
+    const lastState = past[past.length - 1];
+    const newPast = past.slice(0, past.length - 1);
+    
+    setFuture([annotations, ...future]);
+    setPast(newPast);
+    setAnnotations(lastState);
+  };
+
+  // Redo function
+  const redo = () => {
+    if (future.length === 0) return;
+    
+    const nextState = future[0];
+    const newFuture = future.slice(1);
+    
+    setPast([...past, annotations]);
+    setFuture(newFuture);
+    setAnnotations(nextState);
+  };
+
+  // Check if undo/redo actions are available
+  const canUndo = past.length > 0;
+  const canRedo = future.length > 0;
 
   return (
     <DocumentContext.Provider
@@ -117,14 +169,18 @@ export const DocumentProvider: React.FC<{ children: ReactNode }> = ({
         isExporting,
         setIsExporting,
         activeAnnotation,
-        setActiveAnnotation, // Make sure this is included here!
-        setAnnotations,
+        setActiveAnnotation,
+        setAnnotations: setAnnotationsWithHistory,
         annotationColor,
         setAnnotationColor,
         highlightColor,
         setHighlightColor,
         underlineColor,
         setUnderlineColor,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
       }}
     >
       {children}
@@ -142,3 +198,5 @@ export const useDocument = (): DocumentContextType => {
 
 // Also export Annotation type for use in other files
 export type { Annotation };
+
+

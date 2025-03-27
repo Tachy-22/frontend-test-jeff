@@ -1,5 +1,5 @@
-module.exports = {
-  // ...existing code...
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -24,7 +24,14 @@ module.exports = {
       test: /\.pdf$/,
       type: "asset/resource",
     });
-    // ...existing code...
+    // Handle canvas module and bindings.js
+    config.module.rules.push({
+      test: /node_modules\/canvas|node_modules\\canvas|bindings/,
+      use: 'null-loader',
+    });
+    
     return config;
   },
-};
+}
+
+module.exports = nextConfig;

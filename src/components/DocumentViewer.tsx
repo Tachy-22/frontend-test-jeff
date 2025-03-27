@@ -7,6 +7,8 @@ import {
   Download,
   Loader,
   FileUp,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import AnnotationLayer from "@/components/AnnotationLayer";
 import { toast } from "@/hooks/use-toast";
@@ -69,6 +71,10 @@ const DocumentViewer: React.FC = () => {
     highlightColor,
     underlineColor,
     currentTool,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useDocument();
 
   const [scale, setScale] = useState<number>(1.0);
@@ -544,6 +550,29 @@ const DocumentViewer: React.FC = () => {
               disabled={scale >= 3}
             >
               +
+            </Button>
+            
+            {/* Add undo/redo buttons */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo"
+              className="ml-2"
+            >
+              <Undo2 className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo"
+              className="ml-1"
+            >
+              <Redo2 className="h-4 w-4" />
             </Button>
           </div>
 
