@@ -397,7 +397,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
+  const handleTouchEnd = () => {
     if (isDrawing) {
       // Similar to mouse up, create annotation if we were drawing
       if (!currentTool || currentTool === "select") {
