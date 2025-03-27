@@ -44,6 +44,10 @@ interface DocumentContextType {
   setAnnotations: (annotations: Annotation[] ) => void;
   annotationColor: string;
   setAnnotationColor: (color: string) => void;
+  highlightColor: string;
+  setHighlightColor: (color: string) => void;
+  underlineColor: string;
+  setUnderlineColor: (color: string) => void;
 }
 
 const DocumentContext = createContext<DocumentContextType | undefined>(
@@ -65,12 +69,22 @@ export const DocumentProvider: React.FC<{ children: ReactNode }> = ({
     null
   );
   const [annotationColor, setAnnotationColor] = useState<string>('#FFEB3B'); // Default yellow color
+  const [highlightColor, setHighlightColor] = useState<string>('#FFEB3B'); // Default yellow for highlights
+  const [underlineColor, setUnderlineColor] = useState<string>('#4285F4'); // Default blue for underlines
 
   const addAnnotation = (annotation: Omit<Annotation, "id">) => {
+    // Determine which color to use based on annotation type
+    let colorToUse = annotationColor;
+    if (annotation.type === "highlight") {
+      colorToUse = highlightColor;
+    } else if (annotation.type === "underline") {
+      colorToUse = underlineColor;
+    }
+    
     const newAnnotation = {
       ...annotation,
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      color: annotation.color || annotationColor, // Use the current annotation color if not specified
+      color: annotation.color || colorToUse, // Use the type-appropriate color
     };
     setAnnotations([...annotations, newAnnotation]);
   };
@@ -107,6 +121,10 @@ export const DocumentProvider: React.FC<{ children: ReactNode }> = ({
         setAnnotations,
         annotationColor,
         setAnnotationColor,
+        highlightColor,
+        setHighlightColor,
+        underlineColor,
+        setUnderlineColor,
       }}
     >
       {children}

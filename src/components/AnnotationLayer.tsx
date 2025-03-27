@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDocument } from "@/contexts/DocumentContext";
 import CommentDialog from "./CommentDialog";
+import { convertColorToRgb } from "@/lib/utils";
 
 interface AnnotationLayerProps {
   pageNumber: number;
@@ -25,7 +26,9 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     currentTool,
     activeAnnotation,
     setActiveAnnotation,
-    annotationColor
+    annotationColor,
+    highlightColor,
+    underlineColor,
   } = useDocument();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -119,17 +122,21 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
           case "nw": // Top-left
             newX = x;
             newY = y;
-            newWidth = annotation.position.x + (annotation.position.width || 0) - x;
-            newHeight = annotation.position.y + (annotation.position.height || 0) - y;
+            newWidth =
+              annotation.position.x + (annotation.position.width || 0) - x;
+            newHeight =
+              annotation.position.y + (annotation.position.height || 0) - y;
             break;
           case "ne": // Top-right
             newY = y;
             newWidth = x - annotation.position.x;
-            newHeight = annotation.position.y + (annotation.position.height || 0) - y;
+            newHeight =
+              annotation.position.y + (annotation.position.height || 0) - y;
             break;
           case "sw": // Bottom-left
             newX = x;
-            newWidth = annotation.position.x + (annotation.position.width || 0) - x;
+            newWidth =
+              annotation.position.x + (annotation.position.width || 0) - x;
             newHeight = y - annotation.position.y;
             break;
           case "se": // Bottom-right
@@ -263,7 +270,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   // Handler for comment submission
   const handleCommentSubmit = (content: string) => {
     addAnnotation({
-      type: 'comment',
+      type: "comment",
       pageNumber,
       content,
       position: commentPosition,
@@ -307,12 +314,12 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
                 }}
               >
                 <div
-                //  className="bg-yellow-300/30"
+                  //  className="bg-yellow-300/30"
                   style={{
                     width: `${position.width}px`,
                     height: `${position.height}px`,
                     zIndex: 10,
-                    backgroundColor: annotationColor,
+                    backgroundColor: highlightColor,
                     backdropFilter: "opacity(10%)",
                     opacity: 0.3,
                   }}
@@ -338,12 +345,12 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
                 }}
               >
                 <div
-                //  className="bg-blue-500"
+                  //  className="bg-blue-500"
                   style={{
                     width: `${position.width}px`,
                     height: "2px",
                     zIndex: 10,
-                    backgroundColor: annotationColor,
+                    backgroundColor: underlineColor,
                   }}
                 />
                 {showLabel && (
@@ -480,12 +487,17 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
         {isDrawing &&
           (currentTool === "highlight" || currentTool === "underline") && (
             <div
-              className={`absolute ${
-                currentTool === "highlight"
-                  ? "bg-yellow-200 opacity-50"
-                  : "border-b-2 border-blue-500"
-              }`}
+              className={`absolute`}
               style={{
+                ...(currentTool === "highlight"
+                  ? {
+                      backgroundColor: highlightColor,
+                      opacity: 0.5,
+                    }
+                  : {
+                      borderBottom: `2px solid ${underlineColor}`,
+                    }),
+
                 left: Math.min(startPosition.x, currentPosition.x) * scale,
                 top:
                   currentTool === "highlight"
@@ -502,7 +514,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
       </div>
 
       {/* Comment Dialog */}
-      <CommentDialog 
+      <CommentDialog
         isOpen={isCommentDialogOpen}
         onClose={() => setIsCommentDialogOpen(false)}
         onSubmit={handleCommentSubmit}

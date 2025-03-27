@@ -22,6 +22,8 @@ const AnnotationToolbar: React.FC = () => {
     currentPage,
     annotationColor,
     setAnnotationColor,
+    setUnderlineColor,
+    setHighlightColor,
   } = useDocument();
 
   const tools = [
@@ -51,6 +53,11 @@ const AnnotationToolbar: React.FC = () => {
   // Handle custom color selection
   const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAnnotationColor(e.target.value);
+    if (currentTool === "highlight") {
+      setHighlightColor(e.target.value);
+    } else if (currentTool === "underline") {
+      setUnderlineColor(e.target.value);
+    }
   };
 
   return (
@@ -91,7 +98,14 @@ const AnnotationToolbar: React.FC = () => {
                 }`}
                 style={{ backgroundColor: color.value }}
                 title={color.name}
-                onClick={() => setAnnotationColor(color.value)}
+                onClick={() => {
+                  setAnnotationColor(color.value);
+                  if (currentTool === "highlight") {
+                    setHighlightColor(color.value);
+                  } else if (currentTool === "underline") {
+                    setUnderlineColor(color.value);
+                  }
+                }}
                 aria-label={`Select ${color.name} color`}
               />
             ))}

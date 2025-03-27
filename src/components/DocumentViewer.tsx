@@ -13,6 +13,8 @@ import { toast } from "@/hooks/use-toast";
 import { PDFDocument, rgb } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
+import { convertColorToRgb } from "@/lib/utils";
+
 
 // We need to specify the worker source, but we're using legacy build to avoid Node.js dependencies
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -30,6 +32,9 @@ const DocumentViewer: React.FC = () => {
     setFile, // We'll use this to reset the file,,
     setAnnotations,
     setActiveAnnotation,
+  ///  annotationColor,
+    highlightColor,
+    underlineColor,
   } = useDocument();
 
   const [scale, setScale] = useState<number>(1.0);
@@ -146,6 +151,8 @@ const DocumentViewer: React.FC = () => {
     setScale((prevScale) => Math.max(prevScale - 0.2, 0.5));
   };
 
+
+
   const exportDocument = async () => {
     if (!file) return;
 
@@ -183,6 +190,14 @@ const DocumentViewer: React.FC = () => {
 
         for (const annotation of pageAnnotations) {
           const scaleFactor = 1.0;
+          // Determine which color to use based on the annotation type
+         // let colorToUse = annotationColor;
+
+          // Convert the annotation color to rgb format for pdf-lib
+          const pdfColor =
+            typeof annotation.type === "highlight"
+              ? convertColorToRgb(highlightColor)
+              : convertColorToRgb(underlineColor);
 
           if (annotation.type === "highlight") {
             pdfPage.drawRectangle({
@@ -193,7 +208,7 @@ const DocumentViewer: React.FC = () => {
                   scaleFactor,
               width: (annotation.position.width || 0) * scaleFactor,
               height: (annotation.position.height || 0) * scaleFactor,
-              color: rgb(1, 0.95, 0.4),
+              color: pdfColor,
               opacity: 0.3,
             });
           } else if (annotation.type === "underline") {
@@ -216,7 +231,7 @@ const DocumentViewer: React.FC = () => {
                     scaleFactor,
               },
               thickness: 2,
-              color: rgb(0, 0, 0.8),
+              color: pdfColor,
               opacity: 0.8,
             });
           } else if (annotation.type === "comment") {
