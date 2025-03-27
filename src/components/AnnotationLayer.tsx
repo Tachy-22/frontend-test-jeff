@@ -7,7 +7,7 @@ interface AnnotationLayerProps {
   scale: number;
   width: number;
   height: number;
-  isMobile?: boolean;
+ // isMobile?: boolean;
 }
 
 // Resize handle positions
@@ -18,7 +18,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   scale,
   width,
   height,
-  isMobile = false,
+//  isMobile = false,
 }) => {
   const {
     annotations,
