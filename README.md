@@ -30,6 +30,17 @@ An interactive web application built with **Next.js**, **TypeScript**, and **Tai
 
 ---
 
+## ⚙️ Challenges & Solutions
+### 1. 📦 pdfjs-dist Compatibility Issue
+Problem: Older versions of pdfjs-dist caused rendering failures and import errors, especially with modern module syntax.
+Solution: Upgraded to "pdfjs-dist": "^3.11.174" to ensure compatibility and stable PDF rendering.
+
+### 2. 📱 Touch Support for Mobile & Tablets
+Problem: The app initially worked only on desktops due to reliance on mouse event handlers. Touch devices couldn’t interact with annotations or signatures.
+Solution: Implemented touch event handlers (touchstart, touchmove, touchend) alongside existing mouse events to provide a smooth and responsive mobile experience.
+
+
+
 ## 📸 Screenshots
 
 ![Application Preview](https://frontend-test-jeff.vercel.app/og-image.png)
