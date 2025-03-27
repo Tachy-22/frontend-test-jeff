@@ -34,6 +34,7 @@ const DocumentViewer: React.FC = () => {
     ///  annotationColor,
     highlightColor,
     underlineColor,
+    currentTool,
   } = useDocument();
 
   const [scale, setScale] = useState<number>(1.0);
@@ -94,17 +95,34 @@ const DocumentViewer: React.FC = () => {
         // Get any rotation metadata from the PDF page
         const rotation = page.rotate || 0;
 
-        // Set viewport and canvas - use rotation parameter to correct inverted PDFs
-        const viewport = page.getViewport({ scale, rotation: -rotation });
+        // Set viewport and canvas - properly handle rotation
+        // Don't negate the rotation, instead use it directly
+        // PDF.js will handle the rotation correctly
+        const viewport = page.getViewport({
+          scale,
+          rotation: rotation, // Use the actual rotation value from the PDF
+        });
+
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const context = canvas.getContext("2d");
         if (!context) return;
 
-        // Update canvas dimensions
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        // Set to high quality rendering - use device pixel ratio for higher resolution
+        const pixelRatio = window.devicePixelRatio || 1;
+        const scaledViewport = page.getViewport({
+          scale: scale * pixelRatio,
+          rotation: rotation,
+        });
+
+        // Update canvas dimensions with pixel ratio for higher quality
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+
+        // Set display size to maintain aspect ratio
+        canvas.style.width = `${viewport.width}px`;
+        canvas.style.height = `${viewport.height}px`;
 
         // Store dimensions for annotation layer
         setPageWidth(viewport.width);
@@ -114,10 +132,28 @@ const DocumentViewer: React.FC = () => {
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Render the page with proper orientation
+        // Apply pixel ratio scale for high DPI displays
+        context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+        // Render the page with proper orientation and high quality
         await page.render({
           canvasContext: context,
-          viewport,
+          viewport: scaledViewport,
+          renderInteractiveForms: true,
+          enableWebGL: true,
+          // Use high quality rendering
+          canvasFactoryFactory: {
+            create: (_) => {
+              return {
+                create: (width, height) => {
+                  const newCanvas = document.createElement("canvas");
+                  newCanvas.width = width;
+                  newCanvas.height = height;
+                  return newCanvas;
+                },
+              };
+            },
+          },
         }).promise;
 
         setIsLoading(false);
@@ -187,16 +223,8 @@ const DocumentViewer: React.FC = () => {
 
         for (const annotation of pageAnnotations) {
           const scaleFactor = 1.0;
-          // Determine which color to use based on the annotation type
-          // let colorToUse = annotationColor;
 
-          // Convert the annotation color to rgb format for pdf-lib
-          const pdfColor =
-            typeof annotation.type === "highlight"
-              ? convertColorToRgb(highlightColor)
-              : convertColorToRgb(underlineColor);
-
-          if (annotation.type === "highlight") {
+          if (currentTool === "highlight") {
             pdfPage.drawRectangle({
               x: annotation.position.x * scaleFactor,
               y:
@@ -208,7 +236,7 @@ const DocumentViewer: React.FC = () => {
               color: convertColorToRgb(highlightColor),
               opacity: 0.3,
             });
-          } else if (annotation.type === "underline") {
+          } else if (currentTool === "underline") {
             // Fix underline rendering
             pdfPage.drawLine({
               start: {
@@ -228,7 +256,7 @@ const DocumentViewer: React.FC = () => {
                     scaleFactor,
               },
               thickness: 2,
-              color: pdfColor,
+              color: convertColorToRgb(underlineColor),
               opacity: 0.8,
             });
           } else if (annotation.type === "comment") {
