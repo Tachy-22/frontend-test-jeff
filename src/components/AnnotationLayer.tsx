@@ -2,13 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Annotation, useDocument } from "@/contexts/DocumentContext";
 import CommentDialog from "./CommentDialog";
 
-interface AnnotationLayerProps {
-  pageNumber: number;
-  scale: number;
-  width: number;
-  height: number;
- // isMobile?: boolean;
-}
 
 // Resize handle positions
 const RESIZE_HANDLES = ["nw", "ne", "sw", "se"];

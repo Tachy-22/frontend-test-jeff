@@ -13,10 +13,12 @@ const DocumentUpload: React.FC = () => {
     
     if (!file) return;
     
-    if (file.type !== 'application/pdf') {
+    if (file.type !== 'application/pdf' && 
+        file.type !== 'application/msword' && 
+        file.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PDF file",
+        description: "Please upload a PDF or DOC file",
         variant: "destructive"
       });
       return;
@@ -32,7 +34,9 @@ const DocumentUpload: React.FC = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'application/pdf': ['.pdf']
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
     },
     maxFiles: 1
   });
@@ -46,7 +50,7 @@ const DocumentUpload: React.FC = () => {
         }`}
       >
         <label htmlFor="file-upload" className="sr-only">
-          Upload PDF document
+          Upload PDF or DOC document
         </label>
         <input {...getInputProps()} id="file-upload" aria-describedby="file-upload-description" />
         <div className="flex flex-col items-center justify-center space-y-4">
@@ -59,21 +63,21 @@ const DocumentUpload: React.FC = () => {
           </div>
           <div>
             <h2 className="text-lg font-medium" id="file-upload-description">
-              {isDragActive ? 'Drop your PDF here' : 'Drag & drop your PDF file'}
+              {isDragActive ? 'Drop your file here' : 'Drag & drop your PDF or DOC file'}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
               Or click to browse your files
             </p>
           </div>
           <div className="text-xs text-muted-foreground">
-            Only PDF files are supported
+            Only PDF and DOC files are supported
           </div>
         </div>
       </div>
       
       <div className="mt-8 text-center">
         <p className="text-sm text-muted-foreground mb-4">
-          Need a sample document to try? Download a sample PDF
+          Need a sample document to try? Download a sample PDF or DOC
         </p>
         <Button
           variant="outline"

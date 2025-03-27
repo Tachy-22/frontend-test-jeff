@@ -18,17 +18,6 @@ import { convertColorToRgb } from "@/lib/utils";
 // We need to specify the worker source, but we're using legacy build to avoid Node.js dependencies
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-// Define TouchState type and createTouchState function directly in this component
-type TouchState = {
-  isDragging: boolean;
-  lastX: number;
-  lastY: number;
-  startX: number;
-  startY: number;
-  isMultiTouch: boolean;
-  initialDistance: number;
-  initialScale: number;
-};
 
 const DEFAULT_TOUCH_STATE: TouchState = {
   isDragging: false,
