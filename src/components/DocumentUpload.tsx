@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useDocument } from '@/contexts/DocumentContext';
@@ -46,7 +45,10 @@ const DocumentUpload: React.FC = () => {
           isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
         }`}
       >
-        <input {...getInputProps()} />
+        <label htmlFor="file-upload" className="sr-only">
+          Upload PDF document
+        </label>
+        <input {...getInputProps()} id="file-upload" aria-describedby="file-upload-description" />
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="bg-primary/10 p-4 rounded-full">
             {isDragActive ? (
@@ -56,9 +58,9 @@ const DocumentUpload: React.FC = () => {
             )}
           </div>
           <div>
-            <h3 className="text-lg font-medium">
+            <h2 className="text-lg font-medium" id="file-upload-description">
               {isDragActive ? 'Drop your PDF here' : 'Drag & drop your PDF file'}
-            </h3>
+            </h2>
             <p className="text-sm text-muted-foreground mt-1">
               Or click to browse your files
             </p>
