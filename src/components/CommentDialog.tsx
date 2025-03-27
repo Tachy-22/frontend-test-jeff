@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface CommentDialogProps {
   isOpen: boolean;
@@ -45,6 +46,11 @@ const CommentDialog: React.FC<CommentDialogProps> = ({
     if (comment.trim()) {
       onSubmit(comment);
       setComment("");
+    } else {
+      toast({
+        title: "Exporting document",
+        description: "Please wait while we prepare your document for download",
+      });
     }
   };
 

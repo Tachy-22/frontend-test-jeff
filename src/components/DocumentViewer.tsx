@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDocument } from "@/contexts/DocumentContext";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Download, Loader, FileUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Loader,
+  FileUp,
+} from "lucide-react";
 import AnnotationLayer from "@/components/AnnotationLayer";
 import { toast } from "@/hooks/use-toast";
 import { PDFDocument, rgb } from "pdf-lib";
@@ -22,8 +28,8 @@ const DocumentViewer: React.FC = () => {
     isExporting,
     setIsExporting,
     setFile, // We'll use this to reset the file,,
-    setAnnotations
-    
+    setAnnotations,
+    setActiveAnnotation,
   } = useDocument();
 
   const [scale, setScale] = useState<number>(1.0);
@@ -81,8 +87,11 @@ const DocumentViewer: React.FC = () => {
         // Get the page
         const page = await pdfDocument.getPage(currentPage);
 
-        // Set viewport and canvas
-        const viewport = page.getViewport({ scale });
+        // Get any rotation metadata from the PDF page
+        const rotation = page.rotate || 0;
+
+        // Set viewport and canvas - use rotation parameter to correct inverted PDFs
+        const viewport = page.getViewport({ scale, rotation: -rotation });
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -97,17 +106,11 @@ const DocumentViewer: React.FC = () => {
         setPageWidth(viewport.width);
         setPageHeight(viewport.height);
 
-        // Fix for inverted PDF - set proper transform
-        context.save();
-        // Reset transform to identity matrix
+        // Reset transform and clear canvas
         context.setTransform(1, 0, 0, 1, 0, 0);
-        // Clear the canvas
         context.clearRect(0, 0, canvas.width, canvas.height);
-        // Ensure we're not using flip transforms
-        context.transform(1, 0, 0, 1, 0, 0);
-        context.restore();
 
-        // Render the page
+        // Render the page with proper orientation
         await page.render({
           canvasContext: context,
           viewport,
@@ -323,8 +326,8 @@ const DocumentViewer: React.FC = () => {
   const handleNewFile = () => {
     // Reset the file to trigger the upload screen
     setFile(null);
-    setAnnotations([])
-    setActiveAnnotation("select")
+    setAnnotations([]);
+    setActiveAnnotation("select");
   };
 
   if (!file) return null;

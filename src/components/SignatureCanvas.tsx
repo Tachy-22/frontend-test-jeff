@@ -43,7 +43,6 @@ const SignatureCanvas: React.FC = () => {
       },
       imageData: signatureData,
     });
-    setActiveAnnotation("select");
 
     toast({
       title: "Signature added",
@@ -55,10 +54,10 @@ const SignatureCanvas: React.FC = () => {
   };
 
   return (
-    <div className="mt-4 border rounded-lg p-4 bg-white">
+    <div className="mt-8  rounded-lg bg-white">
       <p className="text-sm mb-2">Draw your signature:</p>
 
-      <div className="border border-border rounded">
+      <div className="border border-border rounded cursor-pointer">
         <SignaturePad
           ref={sigCanvas}
           canvasProps={{
@@ -79,7 +78,10 @@ const SignatureCanvas: React.FC = () => {
           variant="default"
           size="sm"
           className="flex-1"
-          onClick={save}
+          onClick={() => {
+            save();
+            setActiveAnnotation("select");
+          }}
           disabled={isEmpty}
         >
           <Check className="h-4 w-4 mr-1" />

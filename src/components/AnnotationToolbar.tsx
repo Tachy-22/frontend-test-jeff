@@ -9,6 +9,7 @@ import {
   Signature,
   Trash2,
   PaintBucket,
+  Plus,
 } from "lucide-react";
 import SignatureCanvas from "@/components/SignatureCanvas";
 
@@ -34,7 +35,6 @@ const AnnotationToolbar: React.FC = () => {
   // Predefined colors for annotations apply
   const colors = [
     { value: "#000000", name: "Black" },
-
     { value: "#FFEB3B", name: "Yellow" },
     { value: "#4CAF50", name: "Green" },
     { value: "#2196F3", name: "Blue" },
@@ -47,6 +47,11 @@ const AnnotationToolbar: React.FC = () => {
   const currentPageAnnotations = annotations.filter(
     (a) => a.pageNumber === currentPage
   );
+
+  // Handle custom color selection
+  const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAnnotationColor(e.target.value);
+  };
 
   return (
     <div className="bg-card rounded-lg border p-4">
@@ -90,6 +95,34 @@ const AnnotationToolbar: React.FC = () => {
                 aria-label={`Select ${color.name} color`}
               />
             ))}
+            {/* Custom color picker */}
+            <div className="relative">
+              <button
+                className={`w-6 h-6 rounded-full border flex items-center justify-center bg-white overflow-hidden ${
+                  !colors.some((c) => c.value === annotationColor)
+                    ? "ring-2 ring-primary ring-offset-2"
+                    : ""
+                }`}
+                title="Custom color"
+                aria-label="Select custom color"
+              >
+                {!colors.some((c) => c.value === annotationColor) ? (
+                  <div
+                    className="w-full h-full"
+                    style={{ backgroundColor: annotationColor }}
+                  />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                <input
+                  type="color"
+                  value={annotationColor}
+                  onChange={handleCustomColorChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  aria-label="Pick custom color"
+                />
+              </button>
+            </div>
           </div>
         </div>
       )}
