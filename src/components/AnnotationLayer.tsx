@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDocument } from "@/contexts/DocumentContext";
 import CommentDialog from "./CommentDialog";
+// import { touchToMousePosition, getTouchPosition } from "@/lib/touch-utils";
 
 interface AnnotationLayerProps {
   pageNumber: number;
   scale: number;
   width: number;
   height: number;
+  isMobile?: boolean;
 }
 
 // Resize handle positions
@@ -17,6 +19,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   scale,
   width,
   height,
+  isMobile = false,
 }) => {
   const {
     annotations,
@@ -25,7 +28,6 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     currentTool,
     activeAnnotation,
     setActiveAnnotation,
-   // annotationColor,
     highlightColor,
     underlineColor,
   } = useDocument();
@@ -134,9 +136,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
             break;
           case "sw": // Bottom-left
             newX = x;
-            newWidth =
-              annotation.position.x + (annotation.position.width || 0) - x;
-            newHeight = y - annotation.position.y;
+            newWidth = y;
             break;
           case "se": // Bottom-right
             newWidth = x - annotation.position.x;
