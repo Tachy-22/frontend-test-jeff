@@ -197,22 +197,7 @@ const DocumentViewer: React.FC = () => {
         // Render the page with proper orientation and high quality
         await page.render({
           canvasContext: context,
-          viewport: scaledViewport,
-          //  renderInteractiveForms: true,
-         // enableWebGL: true,
-          // Use high quality rendering
-          // canvasFactoryFactory: {
-          //   create: () => {
-          //     return {
-          //       create: (width, height) => {
-          //         const newCanvas = document.createElement("canvas");
-          //         newCanvas.width = width;
-          //         newCanvas.height = height;
-          //         return newCanvas;
-          //       },
-          //     };
-          //   },
-          // },
+          viewport,
         }).promise;
 
         setIsLoading(false);

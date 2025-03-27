@@ -1,32 +1,14 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useDocument } from "@/contexts/DocumentContext";
 import DocumentUpload from "@/components/DocumentUpload";
 import DocumentViewer from "@/components/DocumentViewer";
 import AnnotationToolbar from "@/components/AnnotationToolbar";
-import { toast } from "@/hooks/use-toast";
 
+// Remove the worker initialization since it's already handled in DocumentViewer
 const DocumentEditor: React.FC = () => {
   const { file } = useDocument();
-
-  useEffect(() => {
-    // Initialize PDF.js worker
-    const initWorker = async () => {
-      const { GlobalWorkerOptions } = await import("pdfjs-dist/build/pdf");
-      const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.entry");
-      GlobalWorkerOptions.workerSrc = pdfjsWorker;
-    };
-
-    initWorker().catch((error) => {
-      toast({
-        title: "Error",
-        description: "Failed to initialize PDF viewer",
-        variant: "destructive",
-      });
-      console.error("Failed to initialize PDF worker:", error);
-    });
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">

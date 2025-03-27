@@ -10,12 +10,15 @@ module.exports = {
       type: "asset/resource",
     });
     config.module.rules.push({
-      test: /canvas\.node$/,
-      use: "null-loader",
-    });
-    config.module.rules.push({
       test: /\.node$/,
-      use: "null-loader",
+      use: 'ignore-loader', // Or use the empty module approach below if ignore-loader isn't available
+      // Alternative approach without requiring null-loader:
+      // loader: 'string-replace-loader',
+      // options: {
+      //   search: '.*',
+      //   replace: 'module.exports = {};',
+      //   flags: 'g'
+      // }
     });
     config.module.rules.push({
       test: /\.pdf$/,
