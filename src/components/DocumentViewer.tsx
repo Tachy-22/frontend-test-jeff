@@ -199,7 +199,7 @@ const DocumentViewer: React.FC = () => {
           canvasContext: context,
           viewport: scaledViewport,
           //  renderInteractiveForms: true,
-          enableWebGL: true,
+         // enableWebGL: true,
           // Use high quality rendering
           canvasFactoryFactory: {
             create: () => {
