@@ -31,7 +31,6 @@ const DocumentViewer: React.FC = () => {
     setFile, // We'll use this to reset the file,,
     setAnnotations,
     setActiveAnnotation,
-    ///  annotationColor,
     highlightColor,
     underlineColor,
     currentTool,
@@ -143,7 +142,7 @@ const DocumentViewer: React.FC = () => {
           enableWebGL: true,
           // Use high quality rendering
           canvasFactoryFactory: {
-            create: (_) => {
+            create: () => {
               return {
                 create: (width, height) => {
                   const newCanvas = document.createElement("canvas");
