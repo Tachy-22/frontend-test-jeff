@@ -1,8 +1,4 @@
 
-
----
-
-```markdown
 # 📄 Document Signer & Annotation Tool
 
 An interactive web application built with **Next.js**, **TypeScript**, and **Tailwind CSS** that allows users to upload, annotate, and sign PDF documents in a seamless single-page interface.
@@ -17,7 +13,7 @@ An interactive web application built with **Next.js**, **TypeScript**, and **Tai
 - 🖼️ Render PDFs in-browser using canvas
 - 📦 Export annotated PDFs
 
----
+
 
 ## 🛠️ Tech Stack
 
@@ -30,49 +26,24 @@ An interactive web application built with **Next.js**, **TypeScript**, and **Tai
 | [pdf-lib](https://github.com/Hopding/pdf-lib) | PDF manipulation in the browser |
 | [react-dropzone](https://react-dropzone.js.org/) | Drag-and-drop file uploader |
 | [react-signature-canvas](https://github.com/agilgur5/react-signature-canvas) | Signature drawing canvas |
-| [zustand](https://github.com/pmndrs/zustand) | Simple and lightweight state management |
-
----
-
-## 📁 Project Structure
-
-```
-/document-signer-tool
-├── public/
-├── components/
-│   ├── PdfViewer.tsx
-│   ├── AnnotationTools.tsx
-│   ├── SignatureCanvas.tsx
-├── pages/
-│   ├── index.tsx
-├── styles/
-│   └── globals.css
-├── utils/
-│   └── pdfHelpers.ts
-├── types/
-│   └── index.d.ts
-├── store/
-│   └── useAnnotationStore.ts
-├── tailwind.config.js
-├── tsconfig.json
-├── package.json
-```
+| [react context](https://react.dev/reference/react/createContext) | Simple and lightweight state management |
 
 ---
 
 ## 📸 Screenshots
 
-Coming soon...
+![Application Preview](https://frontend-test-jeff.vercel.app/og-image.png)
+*Preview of the application interface*
 
----
+
 
 ## ⚙️ Setup Instructions
 
 1. **Clone the Repository**
 
 ```bash
-git clone https://github.com/your-username/document-signer-tool.git
-cd document-signer-tool
+git clone https://github.com/Tachy-22/frontend-test-jeff.git
+cd frontend-test-jeff
 ```
 
 2. **Install Dependencies**
@@ -94,35 +65,3 @@ yarn dev
 4. **Open in Browser**
 
 Visit [http://localhost:3000](http://localhost:3000)
-
----
-
-## 📌 TODO
-
-- Export annotated PDF
-- Add undo/redo functionality
-- Add zoom and pan
-- Support mobile responsiveness
-- Comment list view sidebar
-
----
-
-## 🧪 Testing
-
-Basic testing can be added using **Jest** and **React Testing Library**.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 🙌 Contributions
-
-Pull requests and feature suggestions are welcome! Please open an issue or submit a PR.
-
-```
-
-Let me know if you'd like this tailored to a specific folder structure or deployment instructions (e.g. Vercel, Docker).
