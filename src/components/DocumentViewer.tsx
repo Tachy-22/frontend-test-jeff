@@ -327,7 +327,7 @@ const DocumentViewer: React.FC = () => {
     // Reset the file to trigger the upload screen
     setFile(null);
     setAnnotations([]);
-    setActiveAnnotation("select");
+    setActiveAnnotation(null);
   };
 
   if (!file) return null;

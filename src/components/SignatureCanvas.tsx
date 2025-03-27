@@ -80,7 +80,7 @@ const SignatureCanvas: React.FC = () => {
           className="flex-1"
           onClick={() => {
             save();
-            setActiveAnnotation("select");
+            setActiveAnnotation(null);
           }}
           disabled={isEmpty}
         >
