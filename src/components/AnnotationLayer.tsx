@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useDocument } from "@/contexts/DocumentContext";
+import { Annotation, useDocument } from "@/contexts/DocumentContext";
 import CommentDialog from "./CommentDialog";
 
 interface AnnotationLayerProps {
@@ -471,28 +471,32 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   };
 
   // Helper to find if a touch is on a resize handle
-  const findResizeHandleAtPosition = (x: number, y: number, annotation: any) => {
+  const findResizeHandleAtPosition = (
+    x: number,
+    y: number,
+    annotation: Annotation
+  ) => {
     if (!annotation) return null;
 
     // Check each handle position
     const handleSize = 15 / scale; // Make the touch target bigger than visual size
     const positions = {
-      "nw": { 
-        x: annotation.position.x, 
-        y: annotation.position.y 
+      nw: {
+        x: annotation.position.x,
+        y: annotation.position.y,
       },
-      "ne": { 
-        x: annotation.position.x + (annotation.position.width || 0), 
-        y: annotation.position.y 
+      ne: {
+        x: annotation.position.x + (annotation.position.width || 0),
+        y: annotation.position.y,
       },
-      "sw": { 
-        x: annotation.position.x, 
-        y: annotation.position.y + (annotation.position.height || 0) 
+      sw: {
+        x: annotation.position.x,
+        y: annotation.position.y + (annotation.position.height || 0),
       },
-      "se": { 
-        x: annotation.position.x + (annotation.position.width || 0), 
-        y: annotation.position.y + (annotation.position.height || 0) 
-      }
+      se: {
+        x: annotation.position.x + (annotation.position.width || 0),
+        y: annotation.position.y + (annotation.position.height || 0),
+      },
     };
 
     for (const handle of RESIZE_HANDLES) {
