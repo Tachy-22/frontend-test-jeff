@@ -201,18 +201,18 @@ const DocumentViewer: React.FC = () => {
           //  renderInteractiveForms: true,
          // enableWebGL: true,
           // Use high quality rendering
-          canvasFactoryFactory: {
-            create: () => {
-              return {
-                create: (width, height) => {
-                  const newCanvas = document.createElement("canvas");
-                  newCanvas.width = width;
-                  newCanvas.height = height;
-                  return newCanvas;
-                },
-              };
-            },
-          },
+          // canvasFactoryFactory: {
+          //   create: () => {
+          //     return {
+          //       create: (width, height) => {
+          //         const newCanvas = document.createElement("canvas");
+          //         newCanvas.width = width;
+          //         newCanvas.height = height;
+          //         return newCanvas;
+          //       },
+          //     };
+          //   },
+          // },
         }).promise;
 
         setIsLoading(false);
