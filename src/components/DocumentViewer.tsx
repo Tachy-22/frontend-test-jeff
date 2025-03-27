@@ -477,8 +477,8 @@ const DocumentViewer: React.FC = () => {
       const { x, y } = getTouchPosition(e, containerRef.current);
 
       // Calculate drag distance
-      const deltaX = x - touchState.lastX;
-      const deltaY = y - touchState.lastY;
+      //const deltaX = x - touchState.lastX;
+      //  const deltaY = y - touchState.lastY;
 
       // Update last position
       setTouchState((prev) => ({
